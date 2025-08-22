@@ -1,0 +1,41 @@
+{
+
+"label": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "project_id": {
+
+     "name" : "project_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Project" 
+      },
+     "type" : "String"
+     },
+    "color": {
+
+     "name" : "color",
+     "required" : "true",
+     "type" : "String"
+     },
+    "name": {
+
+     "name" : "name",
+     "required" : "true",
+     "type" : "String"
+      }
+   
+  }
+ }
+
+}
+

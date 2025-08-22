@@ -1,0 +1,75 @@
+{
+
+"issue": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "owner_id": {
+
+     "name" : "owner_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Users" 
+      },
+     "type" : "String"
+     },
+    "issue_title": {
+
+     "name" : "issue_title",
+     "required" : "true",
+     "type" : "String"
+     },
+    "description": {
+
+     "name" : "description",
+     "required" : "true",
+     "type" : "String"
+     },
+    "attachment": {
+
+     "name" : "attachment",
+     "required" : "false",
+     "is_file" : "true",
+     "type" : "String"
+     },
+    "due_date": {
+
+     "name" : "due_date",
+     "required" : "false",
+     "type" : "Date"
+     },
+    "priority": {
+
+     "name" : "priority",
+     "required" : "false",
+     "type" : "String"
+     },
+    "status": {
+
+     "name" : "status",
+     "required" : "false",
+     "type" : "String"
+     },
+    "list_id": {
+
+     "name" : "list_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "List_res" 
+      },
+     "type" : "String"
+      }
+   
+  }
+ }
+
+}
+

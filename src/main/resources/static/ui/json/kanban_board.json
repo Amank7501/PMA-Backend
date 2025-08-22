@@ -1,0 +1,29 @@
+{
+
+"kanban_board": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "project_id": {
+
+     "name" : "project_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Project" 
+      },
+     "type" : "String"
+      }
+   
+  }
+ }
+
+}
+

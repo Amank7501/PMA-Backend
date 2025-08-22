@@ -1,0 +1,47 @@
+{
+
+"sub_issue": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "issue_id": {
+
+     "name" : "issue_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Issue" 
+      },
+     "type" : "String"
+     },
+    "sub_issue_title": {
+
+     "name" : "sub_issue_title",
+     "required" : "true",
+     "type" : "String"
+     },
+    "status": {
+
+     "name" : "status",
+     "required" : "false",
+     "type" : "String"
+     },
+    "description": {
+
+     "name" : "description",
+     "required" : "false",
+     "type" : "String"
+      }
+   
+  }
+ }
+
+}
+

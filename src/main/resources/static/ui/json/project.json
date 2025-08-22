@@ -1,0 +1,47 @@
+{
+
+"project": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "name": {
+
+     "name" : "name",
+     "required" : "true",
+     "type" : "String"
+     },
+    "description": {
+
+     "name" : "description",
+     "required" : "true",
+     "type" : "String"
+     },
+    "user_id": {
+
+     "name" : "user_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Users" 
+      },
+     "type" : "String"
+     },
+    "due_date": {
+
+     "name" : "due_date",
+     "required" : "true",
+     "type" : "Date"
+      }
+   
+  }
+ }
+
+}
+

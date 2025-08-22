@@ -1,0 +1,26 @@
+{
+
+"project_role": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "project_role_name": {
+
+     "name" : "project_role_name",
+     "required" : "true",
+     "type" : "String"
+      }
+   
+  }
+ }
+
+}
+

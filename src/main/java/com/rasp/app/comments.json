@@ -1,0 +1,44 @@
+{
+
+"comments": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "issue_id": {
+
+     "name" : "issue_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Issue" 
+      },
+     "type" : "String"
+     },
+    "user_id": {
+
+     "name" : "user_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Users" 
+      },
+     "type" : "String"
+     },
+    "content": {
+
+     "name" : "content",
+     "required" : "true",
+     "type" : "String"
+      }
+   
+  }
+ }
+
+}
+

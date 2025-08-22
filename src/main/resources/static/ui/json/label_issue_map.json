@@ -1,0 +1,38 @@
+{
+
+"label_issue_map": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "label_id": {
+
+     "name" : "label_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Label" 
+      },
+     "type" : "String"
+     },
+    "issue_id": {
+
+     "name" : "issue_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Issue" 
+      },
+     "type" : "String"
+      }
+   
+  }
+ }
+
+}
+

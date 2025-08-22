@@ -1,0 +1,47 @@
+{
+
+"user_project_map": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "user_id": {
+
+     "name" : "user_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Users" 
+      },
+     "type" : "String"
+     },
+    "project_id": {
+
+     "name" : "project_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Project" 
+      },
+     "type" : "String"
+     },
+    "project_role_id": {
+
+     "name" : "project_role_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Project_role" 
+      },
+     "type" : "String"
+      }
+   
+  }
+ }
+
+}
+

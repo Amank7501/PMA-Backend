@@ -1,0 +1,43 @@
+package com.rasp.app;
+import platform.helper.HelperManager;
+import platform.webservice.ServiceManager;
+import com.rasp.app.helper.*;
+import com.rasp.app.service.*;
+public class Registry {
+		public static void register(){
+				 HelperManager.getInstance().register(CommentsHelper.getInstance());
+				 HelperManager.getInstance().register(IssueHelper.getInstance());
+				 HelperManager.getInstance().register(IssueUserMapHelper.getInstance());
+				 HelperManager.getInstance().register(KanbanBoardHelper.getInstance());
+				 HelperManager.getInstance().register(LabelHelper.getInstance());
+				 HelperManager.getInstance().register(LabelIssueMapHelper.getInstance());
+				 HelperManager.getInstance().register(ListResHelper.getInstance());
+				 HelperManager.getInstance().register(ProjectHelper.getInstance());
+				 HelperManager.getInstance().register(ProjectRoleHelper.getInstance());
+				 HelperManager.getInstance().register(ResourceRoleHelper.getInstance());
+				 HelperManager.getInstance().register(RoleResourcePermissionHelper.getInstance());
+				 HelperManager.getInstance().register(RoleUserResInstanceHelper.getInstance());
+				 HelperManager.getInstance().register(SubIssueHelper.getInstance());
+				 HelperManager.getInstance().register(SubIssueUserMapHelper.getInstance());
+				 HelperManager.getInstance().register(TestHelper.getInstance());
+				 HelperManager.getInstance().register(UsersHelper.getInstance());
+				 HelperManager.getInstance().register(UserProjectMapHelper.getInstance());
+				 ServiceManager.getInstance().register(new CommentsService());
+				 ServiceManager.getInstance().register(new IssueService());
+				 ServiceManager.getInstance().register(new IssueUserMapService());
+				 ServiceManager.getInstance().register(new KanbanBoardService());
+				 ServiceManager.getInstance().register(new LabelService());
+				 ServiceManager.getInstance().register(new LabelIssueMapService());
+				 ServiceManager.getInstance().register(new ListResService());
+				 ServiceManager.getInstance().register(new ProjectService());
+				 ServiceManager.getInstance().register(new ProjectRoleService());
+				 ServiceManager.getInstance().register(new ResourceRoleService());
+				 ServiceManager.getInstance().register(new RoleResourcePermissionService());
+				 ServiceManager.getInstance().register(new RoleUserResInstanceService());
+				 ServiceManager.getInstance().register(new SubIssueService());
+				 ServiceManager.getInstance().register(new SubIssueUserMapService());
+				 ServiceManager.getInstance().register(new TestService());
+				 ServiceManager.getInstance().register(new UsersService());
+				 ServiceManager.getInstance().register(new UserProjectMapService());
+		}
+}
