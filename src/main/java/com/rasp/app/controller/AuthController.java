@@ -35,21 +35,26 @@ public class AuthController {
 
     String accessToken=null;
 
-    @Value("${clientId}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.clientId}")
     private  String clientId;
-    @Value("${clientSecret}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.clientSecret}")
     private  String clientSecret; // Replace with your actual secret
-    private final String redirectUri = "http://localhost:8082/api/auth/callback";
 
-    @Value("${keycloakTokenUrl}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.redirectUri}")
+    private  String redirectUri ;
+
+    @Value("${spring.security.oauth2.client.provider.keycloak.token-uri}")
     private  String keycloakTokenUrl;
 
-    private final String keycloakUrl = "http://localhost:8080/realms/new";
-
-    private final String frontendURL = "http://localhost:5173/cookies";
+    //private final String keycloakUrl = "http://localhost:8080/realms/new";
+    @Value("${spring.security.oauth2.client.provider.keycloak.frontendURL}")
+    private  String frontendURL;
 
     @Value("${authentication-type:auth-code}")
     private String authenticationType;
+
+    @Value("${spring.security.oauth2.client.provider.keycloak.authorization-uri}")
+    private String authorizationUri;
 
 
 

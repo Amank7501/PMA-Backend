@@ -25,16 +25,16 @@ public class IamService {
 
     String accessToken=null;
 
-    @Value("${clientId}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.clientId}")
     private  String clientId;
 
-    @Value("${clientSecret}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.clientSecret}")
     private  String clientSecret; // Replace with your actual secret
 
-    @Value("${keycloakTokenUrl}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.token-uri}")
     private  String keycloakTokenUrl;
 
-    @Value("${keycloakUrl}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}")
     private  String keycloakUrl;
 
     @Value("${authentication-type:auth-code}")
@@ -45,6 +45,7 @@ public class IamService {
 
     @Value("${HelperPack}")
     private String helperPackage;
+
 
     public ResponseEntity<?> addClientRole(String roleName) {
         RestTemplate restTemplate = new RestTemplate();
@@ -252,7 +253,7 @@ String resource=userResource.getResourceName();
 
         HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(tokenRequestBody, headers);
         ResponseEntity<Map> tokenResponse = restTemplate.exchange(
-                "http://localhost:8080/realms/new/protocol/openid-connect/token",
+                keycloakTokenUrl,
                 HttpMethod.POST,
                 tokenRequest,
                 Map.class
@@ -270,7 +271,7 @@ String resource=userResource.getResourceName();
         HttpEntity<Void> userRequest = new HttpEntity<>(authHeaders);
 
         ResponseEntity<List> userResponse = restTemplate.exchange(
-                "http://localhost:8080/admin/realms/new/users?username=" + userName,
+                keycloakUrl+"/users?username=" + userName,
                 HttpMethod.GET,
                 userRequest,
                 List.class
@@ -297,7 +298,7 @@ String resource=userResource.getResourceName();
 
         // 🔹 Step 3: Get Client ID
         ResponseEntity<List> clientResponse = restTemplate.exchange(
-                "http://localhost:8080/admin/realms/new/clients?clientId=" + clientId,
+                keycloakUrl+"/clients?clientId=" + clientId,
                 HttpMethod.GET,
                 userRequest,
                 List.class
@@ -311,7 +312,7 @@ String resource=userResource.getResourceName();
 
         // 🔹 Step 4: Get Client Role
         ResponseEntity<List> roleResponse = restTemplate.exchange(
-                "http://localhost:8080/admin/realms/new/clients/" + clientUuid + "/roles",
+                keycloakUrl+"/clients/" + clientUuid + "/roles",
                 HttpMethod.GET,
                 userRequest,
                 List.class
@@ -338,7 +339,7 @@ String resource=userResource.getResourceName();
         // 🔹 Step 5: Assign Client Role to User
         HttpEntity<List<Map<String, Object>>> assignRoleRequest = new HttpEntity<>(List.of(role), jsonHeaders);
         ResponseEntity<String> assignRoleResponse = restTemplate.exchange(
-                "http://localhost:8080/admin/realms/new/users/" + userId + "/role-mappings/clients/" + clientUuid,
+                keycloakUrl+"/users/" + userId + "/role-mappings/clients/" + clientUuid,
                 HttpMethod.POST,
                 assignRoleRequest,
                 String.class
