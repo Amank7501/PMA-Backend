@@ -16,9 +16,8 @@ import java.util.List;
 public class RoleFilter extends OncePerRequestFilter {
     @Value("${isScope}")
     private boolean isScoped;
-    @Value("${clientId}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.clientId}")
     private  String cId ;
-
     // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

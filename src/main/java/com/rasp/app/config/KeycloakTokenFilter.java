@@ -28,16 +28,16 @@ import java.util.Map;
 public class KeycloakTokenFilter extends OncePerRequestFilter {
 
 
-    @Value("${keycloakTokenUrl}")
-     String REFRESH_URL ;
-      @Value("${INTROSPECT_URL}")
-       String INTROSPECT_URL ;
+    @Value("${spring.security.oauth2.client.provider.keycloak.token-uri}")
+    String REFRESH_URL ;
+    @Value("${spring.security.oauth2.client.provider.keycloak.INTROSPECT_URL}")
+    String INTROSPECT_URL ;
 
-    @Value("${clientId}")
-      String CLIENT_ID ;
+    @Value("${spring.security.oauth2.client.provider.keycloak.clientId}")
+    String CLIENT_ID ;
 
-   @Value("${clientSecret}")
-      String CLIENT_SECRET ;
+    @Value("${spring.security.oauth2.client.provider.keycloak.clientSecret}")
+    String CLIENT_SECRET ;
 
 //    public KeycloakTokenFilter(String REFRESH_URL, String CLIENT_ID, String CLIENT_SECRET) {
 //        this.REFRESH_URL = REFRESH_URL;

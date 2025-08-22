@@ -25,16 +25,16 @@ public class IamService {
 
     String accessToken=null;
 
-    @Value("${clientId}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.clientId}")
     private  String clientId;
 
-    @Value("${clientSecret}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.clientSecret}")
     private  String clientSecret; // Replace with your actual secret
 
-    @Value("${keycloakTokenUrl}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.token-uri}")
     private  String keycloakTokenUrl;
 
-    @Value("${keycloakUrl}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}")
     private  String keycloakUrl;
 
     @Value("${authentication-type:auth-code}")
@@ -45,6 +45,7 @@ public class IamService {
 
     @Value("${HelperPack}")
     private String helperPackage;
+
 
     public ResponseEntity<?> addClientRole(String roleName) {
         RestTemplate restTemplate = new RestTemplate();
