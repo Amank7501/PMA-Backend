@@ -18,7 +18,8 @@ spring:
             scope: openid, profile, email
         provider:
           keycloak:
-            issuer-uri: ${KEYCLOAK_HOST}:${KEYCLOAK_PORT}/admin/realms/${REALM}
+            issuer-uri: ${KEYCLOAK_HOST}:${KEYCLOAK_PORT}/realms/${REALM}
+            keycloakUrl: http://localhost:8080/admin/realms/new
             authorization-uri: ${KEYCLOAK_HOST}:${KEYCLOAK_PORT}/realms/${REALM}/protocol/openid-connect/auth
             token-uri:  ${KEYCLOAK_HOST}:${KEYCLOAK_PORT}/realms/${REALM}/protocol/openid-connect/token
             INTROSPECT_URL: ${KEYCLOAK_HOST}:${KEYCLOAK_PORT}/realms/${REALM}/protocol/openid-connect/token/introspect

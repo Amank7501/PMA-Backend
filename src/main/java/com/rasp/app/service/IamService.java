@@ -34,7 +34,7 @@ public class IamService {
     @Value("${spring.security.oauth2.client.provider.keycloak.token-uri}")
     private  String keycloakTokenUrl;
 
-    @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}")
+    @Value("${spring.security.oauth2.client.provider.keycloak.keycloakUrl}")
     private  String keycloakUrl;
 
     @Value("${authentication-type:auth-code}")
