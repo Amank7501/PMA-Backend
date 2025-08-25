@@ -62,7 +62,7 @@ public ResponseEntity<?> getAllRole() {
     }
 
     @GetMapping("/user_resource_role")
-    public BaseResource[] userResourceRole(String projectId){
+    public ResponseEntity<?> userResourceRole(String projectId){
         return iamService.getUserRoleResource(projectId);
     }
 

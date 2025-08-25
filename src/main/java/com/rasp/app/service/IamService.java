@@ -17,6 +17,7 @@ import platform.resource.BaseResource;
 import platform.util.ApplicationException;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -851,9 +852,16 @@ public ResponseEntity<?> getUsersByRole(String roleName) {
     return ResponseEntity.ok(userList);
 }
 
-    public BaseResource[] getUserRoleResource(String projectId) {
+    public ResponseEntity<?> getUserRoleResource(String projectId) {
         Expression e = new Expression(RoleUserResInstance.FIELD_RESOURCE_ID, REL_OP.EQ, projectId);
-        return RoleUserResInstanceHelper.getInstance().getByExpression(e);
+        BaseResource[] baseResources= RoleUserResInstanceHelper.getInstance().getByExpression(e);
+        List<RoleUserResInstance> roleUserResInstances=new ArrayList<RoleUserResInstance>();
+        for(BaseResource b:baseResources){
+            RoleUserResInstance b1 = (RoleUserResInstance) b;
+            roleUserResInstances.add(b1);
+        }
+        return ResponseEntity.ok(roleUserResInstances);
+
 
     }
 }
