@@ -10,6 +10,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
+import platform.db.Expression;
+import platform.db.REL_OP;
 import platform.helper.BaseHelper;
 import platform.resource.BaseResource;
 import platform.util.ApplicationException;
@@ -849,4 +851,9 @@ public ResponseEntity<?> getUsersByRole(String roleName) {
     return ResponseEntity.ok(userList);
 }
 
+    public BaseResource[] getUserRoleResource(String projectId) {
+        Expression e = new Expression(RoleUserResInstance.FIELD_RESOURCE_ID, REL_OP.EQ, projectId);
+        return RoleUserResInstanceHelper.getInstance().getByExpression(e);
+
+    }
 }

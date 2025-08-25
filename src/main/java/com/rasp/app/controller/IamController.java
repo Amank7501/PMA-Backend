@@ -5,6 +5,7 @@ import com.rasp.app.service.IamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import platform.resource.BaseResource;
 import platform.util.ApplicationException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -58,6 +59,11 @@ public ResponseEntity<?> getAllRole() {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error fetching users for role '" + roleName + "': " + e.getMessage());
         }
+    }
+
+    @GetMapping("/user_resource_role")
+    public BaseResource[] userResourceRole(String projectId){
+        return iamService.getUserRoleResource(projectId);
     }
 
 
