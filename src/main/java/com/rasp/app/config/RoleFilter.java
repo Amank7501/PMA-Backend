@@ -42,6 +42,8 @@ public class RoleFilter extends OncePerRequestFilter {
                 request.getRequestURI().equals("/api/getAllResourceMetaData")||
                 request.getRequestURI().equals("/api/GetAllResource")||
                 request.getRequestURI().startsWith("/api/getAllResourceMetaData/")||
+                request.getRequestURI().startsWith("/api/auth/role")||
+                request.getRequestURI().startsWith("/api/auth/") && request.getRequestURI().endsWith("/users")||
                 request.getRequestURI().startsWith("/api/auth/logout")) {
             filterChain.doFilter(request, response); // Allow the request to continue without role checks
             return;

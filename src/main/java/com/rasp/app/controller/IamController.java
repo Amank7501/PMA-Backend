@@ -45,8 +45,20 @@ public ResponseEntity<?> userResourceRole(@RequestBody Map<String, String> map){
 public ResponseEntity<?> userRoleMapping(@RequestBody Map<String,Object> map){
     return iamService.addUserRoleMapping(map);
 }
+@GetMapping("/role")
+public ResponseEntity<?> getAllRole() {
+    return iamService.getAllRole();
+}
 
-
+    @GetMapping("/{roleName}/users")
+    public ResponseEntity<?> getUsersByRole(@PathVariable String roleName) {
+        try {
+            return iamService.getUsersByRole(roleName);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error fetching users for role '" + roleName + "': " + e.getMessage());
+        }
+    }
 
 
 
