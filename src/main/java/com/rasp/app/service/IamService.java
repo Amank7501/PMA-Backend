@@ -3,6 +3,7 @@ package com.rasp.app.service;
 import com.rasp.app.helper.RoleUserResInstanceHelper;
 import com.rasp.app.resource.RoleUserResInstance;
 import com.rasp.app.resource.UserResource;
+import org.olap4j.impl.ArrayMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -855,10 +856,18 @@ public ResponseEntity<?> getUsersByRole(String roleName) {
     public ResponseEntity<?> getUserRoleResource(String projectId) {
         Expression e = new Expression(RoleUserResInstance.FIELD_RESOURCE_ID, REL_OP.EQ, projectId);
         BaseResource[] baseResources= RoleUserResInstanceHelper.getInstance().getByExpression(e);
-        List<RoleUserResInstance> roleUserResInstances=new ArrayList<RoleUserResInstance>();
+        Map<String,Object> roleUserResInstances=new ArrayMap<String,Object>();
         for(BaseResource b:baseResources){
             RoleUserResInstance b1 = (RoleUserResInstance) b;
-            roleUserResInstances.add(b1);
+
+         String userName= b1.getUser_name();
+            String userId=  b1.getRasp_user_id();
+            String role= b1.getRole_name();
+            roleUserResInstances.put("userName",userName);
+            roleUserResInstances.put("userId",userId);
+            roleUserResInstances.put("role",role);
+
+
         }
         return ResponseEntity.ok(roleUserResInstances);
 
