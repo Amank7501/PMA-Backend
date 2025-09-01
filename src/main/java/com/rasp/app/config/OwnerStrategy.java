@@ -38,7 +38,7 @@ public class OwnerStrategy extends RoleStrategy{
     }
 
     private BaseResource accessLogic(String role, String action, String resourceName, String resourceInstance, String userId) throws UnsupportedEncodingException {
-        if (action.equals("add") || action.equals("GET_ALL") || action.equals("DELETE_aLL")) {
+        if (action.equals("add") || action.equals("GET_ALL") || action.equals("DELETE_ALL")) {
             RoleResourcePermission roleResourcePermission = (RoleResourcePermission) RoleResourcePermissionHelper.getInstance().
                     getByExpressionFirstRecord(Expression.and(new Expression(RoleResourcePermission.
                                     FIELD_ROLE, REL_OP.EQ, role),

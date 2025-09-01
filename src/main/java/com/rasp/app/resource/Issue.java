@@ -38,6 +38,7 @@ import com.rasp.app.service.*;
 	private String archived = null;
 	private Long archived_time = null;
 	private String owner_id = null;
+	private String project_id = null;
 	private String issue_title = null;
 	private String description = null;
 	private String attachment = null;
@@ -59,6 +60,7 @@ import com.rasp.app.service.*;
 	public static String FIELD_ARCHIVED = "archived";
 	public static String FIELD_ARCHIVED_TIME = "archived_time";
 	public static String FIELD_OWNER_ID = "owner_id";
+	public static String FIELD_PROJECT_ID = "project_id";
 	public static String FIELD_ISSUE_TITLE = "issue_title";
 	public static String FIELD_DESCRIPTION = "description";
 	public static String FIELD_ATTACHMENT = "attachment";
@@ -126,6 +128,11 @@ import com.rasp.app.service.*;
 		owner_idField.setForeign(new Foreign("Users"));
 		metaData.addField(owner_idField);
 
+		Field project_idField = new Field("project_id", "String");
+		project_idField.setRequired(true);
+		project_idField.setForeign(new Foreign("Project"));
+		metaData.addField(project_idField);
+
 		Field issue_titleField = new Field("issue_title", "String");
 		issue_titleField.setRequired(true);
 		metaData.addField(issue_titleField);
@@ -178,6 +185,7 @@ import com.rasp.app.service.*;
 		this.archived = obj.archived;
 		this.archived_time = obj.archived_time;
 		this.owner_id = obj.owner_id;
+		this.project_id = obj.project_id;
 		this.issue_title = obj.issue_title;
 		this.description = obj.description;
 		this.attachment = obj.attachment;
@@ -224,6 +232,8 @@ import com.rasp.app.service.*;
 			map.put("archived_time", archived_time);
 		if(owner_id != null)
 			map.put("owner_id", owner_id);
+		if(project_id != null)
+			map.put("project_id", project_id);
 		if(issue_title != null)
 			map.put("issue_title", issue_title);
 		if(description != null)
@@ -268,6 +278,8 @@ import com.rasp.app.service.*;
 			map.put("archived_time", archived_time);
 		if(validateOwner_id(add))
 			map.put("owner_id", owner_id);
+		if(validateProject_id(add))
+			map.put("project_id", project_id);
 		if(validateIssue_title(add))
 			map.put("issue_title", issue_title);
 		if(validateDescription(add))
@@ -305,6 +317,7 @@ import com.rasp.app.service.*;
 		archived = (String) map.get("archived");
 		archived_time = (map.get("archived_time") == null ? null : ((Number) map.get("archived_time")).longValue());
 		owner_id = (String) map.get("owner_id");
+		project_id = (String) map.get("project_id");
 		issue_title = (String) map.get("issue_title");
 		description = (String) map.get("description");
 		attachment = (String) map.get("attachment");
@@ -364,6 +377,10 @@ import com.rasp.app.service.*;
 		Object owner_idObj = map.get("owner_id");
 		if(owner_idObj != null)
 			owner_id = owner_idObj.toString();
+
+		Object project_idObj = map.get("project_id");
+		if(project_idObj != null)
+			project_id = project_idObj.toString();
 
 		Object issue_titleObj = map.get("issue_title");
 		if(issue_titleObj != null)
@@ -611,6 +628,28 @@ import com.rasp.app.service.*;
 		if(add && owner_id == null)
 			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[owner_id]");
 		return owner_id != null;
+	}
+
+	public String getProject_id() {
+		return project_id;
+	}
+
+	public String getProject_idEx() {
+		return project_id != null ? project_id : "";
+	}
+
+	public void setProject_id(String project_id) {
+		this.project_id = project_id;
+	}
+
+	public void unSetProject_id() {
+		this.project_id = null;
+	}
+
+	public boolean validateProject_id(boolean add) throws ApplicationException {
+		if(add && project_id == null)
+			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[project_id]");
+		return project_id != null;
 	}
 
 	public String getIssue_title() {

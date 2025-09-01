@@ -1,4 +1,7 @@
 package com.rasp.app;
+import com.rasp.app.decorator.IssueUserDecorator;
+import com.rasp.app.decorator.LabelIssueDecorator;
+import platform.decorator.DecoratorManager;
 import platform.helper.HelperManager;
 import platform.webservice.ServiceManager;
 import com.rasp.app.helper.*;
@@ -39,5 +42,7 @@ public class Registry {
 				 ServiceManager.getInstance().register(new TestService());
 				 ServiceManager.getInstance().register(new UsersService());
 				 ServiceManager.getInstance().register(new UserProjectMapService());
+			DecoratorManager.getInstance().register(new IssueUserDecorator());
+			DecoratorManager.getInstance().register(new LabelIssueDecorator());
 		}
 }

@@ -21,6 +21,15 @@
       },
      "type" : "String"
      },
+    "project_id": {
+
+      "name" : "project_id",
+      "required" : "true",
+      "foreign" : {
+        "resource" : "Project"
+      },
+      "type" : "String"
+    },
     "issue_title": {
 
      "name" : "issue_title",

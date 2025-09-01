@@ -8,15 +8,19 @@ public class RoleStrategyRegistry {
     private final RoleStrategy defaultStrategy = new DefultRoleStrategy();
     private  final OwnerStrategy ownerStrategy= new OwnerStrategy();
     private  final RoleStrategyImplementation roleStrategyImplementation= new RoleStrategyImplementation();
+    private  final SuperAdminStrategy superAdminStrategy= new SuperAdminStrategy();
+    private final UserStrategy userStrategy=new UserStrategy();
+
     // Singleton instance
     private static RoleStrategyRegistry instance;
 
     public RoleStrategyRegistry() {
-        strategyMap.put("SUPER_ADMIN", new RoleStrategyImplementation());
+        strategyMap.put("SUPER_ADMIN",superAdminStrategy);
         strategyMap.put("DefultRoleStrategy", defaultStrategy);
         strategyMap.put("OWNER",ownerStrategy);
         strategyMap.put("TEAM_MEMBER",roleStrategyImplementation);
         strategyMap.put("VIEWER",roleStrategyImplementation);
+        strategyMap.put("DEFAULT_USER",userStrategy);
 
     }
     public RoleStrategy getStrategy(String role) {

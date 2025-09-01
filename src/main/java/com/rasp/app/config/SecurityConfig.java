@@ -67,7 +67,7 @@ public class SecurityConfig {
         public CorsConfigurationSource corsFilter() {
             CorsConfiguration config = new CorsConfiguration();
             config.setAllowCredentials(true); // Allow credentials (cookies)
-            config.setAllowedOrigins(Arrays.asList("http://localhost:3001")); // Explicitly allow frontend
+            config.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // Explicitly allow frontend
             config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
             config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
             config.setExposedHeaders(Arrays.asList("Authorization", "Set-Cookie")); // Ensure cookies are exposed
