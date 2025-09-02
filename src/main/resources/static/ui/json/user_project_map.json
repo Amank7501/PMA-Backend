@@ -33,7 +33,7 @@
     "project_role_id": {
 
      "name" : "project_role_id",
-     "required" : "true",
+     "required" : "false",
      "foreign" : {
       "resource" : "Project_role" 
       },

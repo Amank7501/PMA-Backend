@@ -122,7 +122,6 @@ import com.rasp.app.service.*;
 		metaData.addField(project_idField);
 
 		Field project_role_idField = new Field("project_role_id", "String");
-		project_role_idField.setRequired(true);
 		project_role_idField.setForeign(new Foreign("Project_role"));
 		metaData.addField(project_role_idField);
 
@@ -229,7 +228,7 @@ import com.rasp.app.service.*;
 			map.put("user_id", user_id);
 		if(validateProject_id(add))
 			map.put("project_id", project_id);
-		if(validateProject_role_id(add))
+		if(project_role_id != null)
 			map.put("project_role_id", project_role_id);
 		if(extra_data != null)
 			map.put("extra_data", extra_data);
@@ -573,12 +572,6 @@ import com.rasp.app.service.*;
 
 	public void unSetProject_role_id() {
 		this.project_role_id = null;
-	}
-
-	public boolean validateProject_role_id(boolean add) throws ApplicationException {
-		if(add && project_role_id == null)
-			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[project_role_id]");
-		return project_role_id != null;
 	}
 
 	public Map<String, Object> getExtra_data() {
