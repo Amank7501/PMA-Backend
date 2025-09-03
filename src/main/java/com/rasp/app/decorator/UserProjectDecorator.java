@@ -1,11 +1,14 @@
 package com.rasp.app.decorator;
 
 import com.rasp.app.helper.IssueHelper;
+import com.rasp.app.helper.ProjectHelper;
 import com.rasp.app.helper.UserProjectMapHelper;
+import com.rasp.app.helper.UsersHelper;
 import com.rasp.app.resource.*;
 import platform.db.Expression;
 import platform.db.REL_OP;
 import platform.decorator.BaseDecorator;
+import platform.defined.helper.UserHelper;
 import platform.resource.BaseResource;
 import platform.util.ApplicationException;
 import platform.util.ExceptionSeverity;
@@ -36,10 +39,10 @@ public class UserProjectDecorator extends BaseDecorator {
             for (BaseResource pr : user_project) {
                 UserProjectMap user_project_map = (UserProjectMap) pr;
                 Expression e2 = new Expression(Project.FIELD_ID, REL_OP.EQ, user_project_map.getProject_id());
-                BaseResource[] user_project_helper = UserProjectMapHelper.getInstance().getByExpression(e2);
+                BaseResource[] project_helper = ProjectHelper.getInstance().getByExpression(e2);
 
-                if (user_project_helper != null && user_project_helper.length > 0) {
-                    for (BaseResource u : user_project_helper) {
+                if (project_helper != null && project_helper.length > 0) {
+                    for (BaseResource u : project_helper) {
                         projectList.add(u);
                     }
                 }
@@ -61,10 +64,10 @@ public class UserProjectDecorator extends BaseDecorator {
             for (BaseResource pr : user_project) {
                 UserProjectMap user_project_map = (UserProjectMap) pr;
                 Expression e2 = new Expression(Users.FIELD_ID, REL_OP.EQ, user_project_map.getUser_id());
-                BaseResource[] user_project_helper = UserProjectMapHelper.getInstance().getByExpression(e2);
+                BaseResource[] user_helper = UsersHelper.getInstance().getByExpression(e2);
 
-                if (user_project_helper != null && user_project_helper.length > 0) {
-                    for (BaseResource u : user_project_helper) {
+                if (user_helper != null && user_helper.length > 0) {
+                    for (BaseResource u : user_helper) {
                         UserList.add(u);
                     }
                 }
