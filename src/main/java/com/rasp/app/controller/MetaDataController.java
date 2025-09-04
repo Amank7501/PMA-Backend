@@ -190,7 +190,11 @@ public class MetaDataController {
 
             // Extract the class name (e.g., Airline, Bookings) from the full class name
             String simpleClassName = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
-            resources.add(simpleClassName);
+            // Convert CamelCase to snake_case
+            String snakeCaseName = simpleClassName
+                    .replaceAll("([a-z])([A-Z])", "$1_$2")  // insert _ between lower & upper
+                    .toLowerCase();
+            resources.add(snakeCaseName);
 
         }
 

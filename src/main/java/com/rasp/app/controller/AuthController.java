@@ -99,7 +99,7 @@ public class AuthController {
         Map<String, String> body = tokenResponse.getBody();
          accessToken = body.get("access_token");
         String refreshToken = body.get("refresh_token");
-        setCookie(response, "access_token", accessToken, 900); // 15 minutes expiry
+        setCookie(response, "access_token", accessToken, 90000); // 15 minutes expiry
         setCookie(response, "refresh_token", refreshToken, 86400); // 24 hours expiry
     }
 

@@ -45,20 +45,21 @@ public class OwnerStrategy extends RoleStrategy{
                             new Expression(RoleResourcePermission.FIELD_ACTION, REL_OP.EQ, action),
                             new Expression(RoleResourcePermission.FIELD_RESOURCE, REL_OP.EQ, resourceName)));
 
-            if (roleResourcePermission != null) {
-                this.role = role;
-                if (action.equals("add")) {
-                    Boolean hasAccess = getForeignAccess();
-                    if (hasAccess == false) {
-                        return null;
-                    } else {
-
-                        return roleResourcePermission;
-
-                    }
-                }
-
-            }
+//            if (roleResourcePermission != null) {
+//                this.role = role;
+//                if (action.equals("add")) {
+//                    Boolean hasAccess = getForeignAccess();
+//                    if (hasAccess == false) {
+//                        return null;
+//                    } else {
+//
+//                        return roleResourcePermission;
+//
+//                    }
+//                }
+//
+//            }
+            return roleResourcePermission;
         }
         if (resourceInstance == null) {
 
