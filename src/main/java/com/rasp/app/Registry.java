@@ -1,6 +1,5 @@
 package com.rasp.app;
 import com.rasp.app.decorator.IssueUserDecorator;
-//import com.rasp.app.decorator.IssueUserMapDec;
 import com.rasp.app.decorator.LabelIssueDecorator;
 import com.rasp.app.decorator.UserProjectDecorator;
 import platform.decorator.DecoratorManager;
@@ -44,9 +43,10 @@ public class Registry {
 				 ServiceManager.getInstance().register(new TestService());
 				 ServiceManager.getInstance().register(new UsersService());
 				 ServiceManager.getInstance().register(new UserProjectMapService());
-			DecoratorManager.getInstance().register(new IssueUserDecorator());
-			DecoratorManager.getInstance().register(new LabelIssueDecorator());
+
 			DecoratorManager.getInstance().register(new UserProjectDecorator());
-//			DecoratorManager.getInstance().register(new IssueUserMapDec());
+			DecoratorManager.getInstance().register(new LabelIssueDecorator());
+			DecoratorManager.getInstance().register(new IssueUserDecorator());
+
 		}
 }

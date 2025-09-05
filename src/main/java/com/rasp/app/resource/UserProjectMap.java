@@ -39,7 +39,7 @@ import com.rasp.app.service.*;
 	private Long archived_time = null;
 	private String user_id = null;
 	private String project_id = null;
-	private String project_role_id = null;
+	private String project_role = null;
 	private Map<String, Object> extra_data = null;
 
 	public static String FIELD_ID = "id";
@@ -55,7 +55,7 @@ import com.rasp.app.service.*;
 	public static String FIELD_ARCHIVED_TIME = "archived_time";
 	public static String FIELD_USER_ID = "user_id";
 	public static String FIELD_PROJECT_ID = "project_id";
-	public static String FIELD_PROJECT_ROLE_ID = "project_role_id";
+	public static String FIELD_PROJECT_ROLE = "project_role";
 	public static String FIELD_EXTRA_DATA = "extra_data";
 
 	private static final long serialVersionUID = 1L;
@@ -121,9 +121,9 @@ import com.rasp.app.service.*;
 		project_idField.setForeign(new Foreign("Project"));
 		metaData.addField(project_idField);
 
-		Field project_role_idField = new Field("project_role_id", "String");
-		project_role_idField.setForeign(new Foreign("Project_role"));
-		metaData.addField(project_role_idField);
+		Field project_roleField = new Field("project_role", "String");
+		project_roleField.setRequired(true);
+		metaData.addField(project_roleField);
 
 		Field extra_dataField = new Field("extra_data", "Map");
 		extra_dataField.setValueType("Object");
@@ -152,7 +152,7 @@ import com.rasp.app.service.*;
 		this.archived_time = obj.archived_time;
 		this.user_id = obj.user_id;
 		this.project_id = obj.project_id;
-		this.project_role_id = obj.project_role_id;
+		this.project_role = obj.project_role;
 		this.extra_data = obj.extra_data;
 	}
 
@@ -194,8 +194,8 @@ import com.rasp.app.service.*;
 			map.put("user_id", user_id);
 		if(project_id != null)
 			map.put("project_id", project_id);
-		if(project_role_id != null)
-			map.put("project_role_id", project_role_id);
+		if(project_role != null)
+			map.put("project_role", project_role);
 		if(extra_data != null)
 			map.put("extra_data", extra_data);
 		return map;
@@ -228,8 +228,8 @@ import com.rasp.app.service.*;
 			map.put("user_id", user_id);
 		if(validateProject_id(add))
 			map.put("project_id", project_id);
-		if(project_role_id != null)
-			map.put("project_role_id", project_role_id);
+		if(validateProject_role(add))
+			map.put("project_role", project_role);
 		if(extra_data != null)
 			map.put("extra_data", extra_data);
 		return map;
@@ -254,7 +254,7 @@ import com.rasp.app.service.*;
 		archived_time = (map.get("archived_time") == null ? null : ((Number) map.get("archived_time")).longValue());
 		user_id = (String) map.get("user_id");
 		project_id = (String) map.get("project_id");
-		project_role_id = (String) map.get("project_role_id");
+		project_role = (String) map.get("project_role");
 		extra_data = (Map<String, Object>) map.get("extra_data");
 	}
 
@@ -312,9 +312,9 @@ import com.rasp.app.service.*;
 		if(project_idObj != null)
 			project_id = project_idObj.toString();
 
-		Object project_role_idObj = map.get("project_role_id");
-		if(project_role_idObj != null)
-			project_role_id = project_role_idObj.toString();
+		Object project_roleObj = map.get("project_role");
+		if(project_roleObj != null)
+			project_role = project_roleObj.toString();
 
 		extra_data = (Map<String, Object>) map.get("extra_data");
 	}
@@ -558,20 +558,26 @@ import com.rasp.app.service.*;
 		return project_id != null;
 	}
 
-	public String getProject_role_id() {
-		return project_role_id;
+	public String getProject_role() {
+		return project_role;
 	}
 
-	public String getProject_role_idEx() {
-		return project_role_id != null ? project_role_id : "";
+	public String getProject_roleEx() {
+		return project_role != null ? project_role : "";
 	}
 
-	public void setProject_role_id(String project_role_id) {
-		this.project_role_id = project_role_id;
+	public void setProject_role(String project_role) {
+		this.project_role = project_role;
 	}
 
-	public void unSetProject_role_id() {
-		this.project_role_id = null;
+	public void unSetProject_role() {
+		this.project_role = null;
+	}
+
+	public boolean validateProject_role(boolean add) throws ApplicationException {
+		if(add && project_role == null)
+			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[project_role]");
+		return project_role != null;
 	}
 
 	public Map<String, Object> getExtra_data() {
