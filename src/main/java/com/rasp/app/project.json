@@ -32,13 +32,8 @@
       "resource" : "Users" 
       },
      "type" : "String"
-     },
-    "due_date": {
+     }
 
-     "name" : "due_date",
-     "required" : "true",
-     "type" : "Date"
-      }
    
   }
  }

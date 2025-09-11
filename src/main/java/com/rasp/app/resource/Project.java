@@ -40,7 +40,6 @@ import com.rasp.app.service.*;
 	private String name = null;
 	private String description = null;
 	private String user_id = null;
-	private Date due_date = null;
 	private Map<String, Object> extra_data = null;
 
 	public static String FIELD_ID = "id";
@@ -57,7 +56,6 @@ import com.rasp.app.service.*;
 	public static String FIELD_NAME = "name";
 	public static String FIELD_DESCRIPTION = "description";
 	public static String FIELD_USER_ID = "user_id";
-	public static String FIELD_DUE_DATE = "due_date";
 	public static String FIELD_EXTRA_DATA = "extra_data";
 
 	private static final long serialVersionUID = 1L;
@@ -126,10 +124,6 @@ import com.rasp.app.service.*;
 		user_idField.setForeign(new Foreign("Users"));
 		metaData.addField(user_idField);
 
-		Field due_dateField = new Field("due_date", "Date");
-		due_dateField.setRequired(true);
-		metaData.addField(due_dateField);
-
 		Field extra_dataField = new Field("extra_data", "Map");
 		extra_dataField.setValueType("Object");
 		metaData.addField(extra_dataField);
@@ -158,7 +152,6 @@ import com.rasp.app.service.*;
 		this.name = obj.name;
 		this.description = obj.description;
 		this.user_id = obj.user_id;
-		this.due_date = obj.due_date;
 		this.extra_data = obj.extra_data;
 	}
 
@@ -202,8 +195,6 @@ import com.rasp.app.service.*;
 			map.put("description", description);
 		if(user_id != null)
 			map.put("user_id", user_id);
-		if(due_date != null)
-			map.put("due_date", due_date);
 		if(extra_data != null)
 			map.put("extra_data", extra_data);
 		return map;
@@ -238,8 +229,6 @@ import com.rasp.app.service.*;
 			map.put("description", description);
 		if(validateUser_id(add))
 			map.put("user_id", user_id);
-		if(validateDue_date(add))
-			map.put("due_date", due_date);
 		if(extra_data != null)
 			map.put("extra_data", extra_data);
 		return map;
@@ -265,7 +254,6 @@ import com.rasp.app.service.*;
 		name = (String) map.get("name");
 		description = (String) map.get("description");
 		user_id = (String) map.get("user_id");
-		due_date = (Date) map.get("due_date");
 		extra_data = (Map<String, Object>) map.get("extra_data");
 	}
 
@@ -326,10 +314,6 @@ import com.rasp.app.service.*;
 		Object user_idObj = map.get("user_id");
 		if(user_idObj != null)
 			user_id = user_idObj.toString();
-
-		Object due_dateObj = map.get("due_date");
-		if(due_dateObj != null)
-			due_date = new Date(due_dateObj.toString());
 
 		extra_data = (Map<String, Object>) map.get("extra_data");
 	}
@@ -593,24 +577,6 @@ import com.rasp.app.service.*;
 		if(add && user_id == null)
 			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[user_id]");
 		return user_id != null;
-	}
-
-	public Date getDue_date() {
-		return due_date;
-	}
-
-	public void setDue_date(Date due_date) {
-		this.due_date = due_date;
-	}
-
-	public void unSetDue_date() {
-		this.due_date = null;
-	}
-
-	public boolean validateDue_date(boolean add) throws ApplicationException {
-		if(add && due_date == null)
-			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[due_date]");
-		return due_date != null;
 	}
 
 	public Map<String, Object> getExtra_data() {

@@ -43,10 +43,8 @@ public class Registry {
 				 ServiceManager.getInstance().register(new TestService());
 				 ServiceManager.getInstance().register(new UsersService());
 				 ServiceManager.getInstance().register(new UserProjectMapService());
-
-			DecoratorManager.getInstance().register(new UserProjectDecorator());
-			DecoratorManager.getInstance().register(new LabelIssueDecorator());
-			DecoratorManager.getInstance().register(new IssueUserDecorator());
-
+				 DecoratorManager.getInstance().register(new UserProjectDecorator());
+				 DecoratorManager.getInstance().register(new LabelIssueDecorator());
+				 DecoratorManager.getInstance().register(new IssueUserDecorator());
 		}
 }

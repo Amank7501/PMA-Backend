@@ -138,7 +138,6 @@ import com.rasp.app.service.*;
 		metaData.addField(issue_titleField);
 
 		Field descriptionField = new Field("description", "String");
-		descriptionField.setRequired(true);
 		metaData.addField(descriptionField);
 
 		Field attachmentField = new Field("attachment", "String");
@@ -282,7 +281,7 @@ import com.rasp.app.service.*;
 			map.put("project_id", project_id);
 		if(validateIssue_title(add))
 			map.put("issue_title", issue_title);
-		if(validateDescription(add))
+		if(description != null)
 			map.put("description", description);
 		if(attachment != null)
 			map.put("attachment", attachment);
@@ -688,12 +687,6 @@ import com.rasp.app.service.*;
 
 	public void unSetDescription() {
 		this.description = null;
-	}
-
-	public boolean validateDescription(boolean add) throws ApplicationException {
-		if(add && description == null)
-			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[description]");
-		return description != null;
 	}
 
 	public String getAttachment() {

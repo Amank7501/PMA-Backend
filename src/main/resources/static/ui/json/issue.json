@@ -39,7 +39,7 @@
     "description": {
 
      "name" : "description",
-     "required" : "true",
+     "required" : "false",
      "type" : "String"
      },
     "attachment": {

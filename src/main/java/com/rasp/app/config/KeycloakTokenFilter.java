@@ -102,44 +102,44 @@ public class KeycloakTokenFilter extends OncePerRequestFilter {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN,"Refresh token not valid, login karlo");
                 return;
             }
-            if (refreshToken != null) {
-                accessToken = refreshAccessToken(refreshToken);
-                if (accessToken != null) {
-                    final String newAccessToken = accessToken;
-
-                    // Store the new access token in a cookie
-                    Cookie accessTokenCookie = new Cookie("access_token", newAccessToken);
-                    accessTokenCookie.setHttpOnly(false);
-                    accessTokenCookie.setSecure(false);
-                    accessTokenCookie.setPath("/");
-                    accessTokenCookie.setMaxAge(60*2); // Set expiry (30 minutes)
-                    accessTokenCookie.setDomain("localhost");
-                    response.addCookie(accessTokenCookie);
-
-                    // Wrap the request with the new Authorization header
-                    HttpServletRequest modifiedRequest = new HttpServletRequestWrapper(request) {
-                        @Override
-                        public String getHeader(String name) {
-                            if ("Authorization".equalsIgnoreCase(name)) {
-                                return "Bearer " + newAccessToken; // Set new token
-                            }
-                            return super.getHeader(name);
-                        }
-                    };
-
-                    // Proceed with the modified request
-                    chain.doFilter(modifiedRequest, response);
-                    return;
-                } else {
-                    System.out.print("access token retrieval issue");
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
-                    return;
-                }
-            } else {
-                System.out.println("refresh token retrieval issue");
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-                return;
-            }
+//            if (refreshToken != null) {
+//                accessToken = refreshAccessToken(refreshToken);
+//                if (accessToken != null) {
+//                    final String newAccessToken = accessToken;
+//
+//                    // Store the new access token in a cookie
+//                    Cookie accessTokenCookie = new Cookie("access_token", newAccessToken);
+//                    accessTokenCookie.setHttpOnly(false);
+//                    accessTokenCookie.setSecure(false);
+//                    accessTokenCookie.setPath("/");
+//                    accessTokenCookie.setMaxAge(60*2); // Set expiry (30 minutes)
+//                    accessTokenCookie.setDomain("localhost");
+//                    response.addCookie(accessTokenCookie);
+//
+//                    // Wrap the request with the new Authorization header
+//                    HttpServletRequest modifiedRequest = new HttpServletRequestWrapper(request) {
+//                        @Override
+//                        public String getHeader(String name) {
+//                            if ("Authorization".equalsIgnoreCase(name)) {
+//                                return "Bearer " + newAccessToken; // Set new token
+//                            }
+//                            return super.getHeader(name);
+//                        }
+//                    };
+//
+//                    // Proceed with the modified request
+//                    chain.doFilter(modifiedRequest, response);
+//                    return;
+//                } else {
+//                    System.out.print("access token retrieval issue");
+//                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
+//                    return;
+//                }
+//            } else {
+//                System.out.println("refresh token retrieval issue");
+//                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+//                return;
+//            }
         }
 
         // Authenticate user in Spring Security
