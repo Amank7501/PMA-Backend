@@ -855,13 +855,13 @@ public ResponseEntity<?> getUsersByRole(String roleName) {
 
     public ResponseEntity<?> getUserRoleResource(String projectId) {
         Expression e = new Expression(RoleUserResInstance.FIELD_RESOURCE_ID, REL_OP.EQ, projectId);
-        BaseResource[] baseResources=  RoleUserResInstanceHelper.getInstance().getByExpression(e);
+      BaseResource[] baseResources=  RoleUserResInstanceHelper.getInstance().getByExpression(e);
         List<Map<String,Object>> maps = new ArrayList<>(List.of());
-        // Map<String,Object> roleUserResInstances=new ArrayMap<String,Object>();
+       // Map<String,Object> roleUserResInstances=new ArrayMap<String,Object>();
         for(BaseResource b:baseResources){
             RoleUserResInstance b1 = (RoleUserResInstance) b;
             Map<String,Object> roleUserResInstances=new ArrayMap<String,Object>();
-            String userName= b1.getUser_name();
+         String userName= b1.getUser_name();
             String userId=  b1.getRasp_user_id();
             String role= b1.getRole_name();
             roleUserResInstances.put("userName",userName);

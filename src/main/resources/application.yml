@@ -61,7 +61,7 @@ dms:
   host: ${DMS_HOST}
   port: ${DMS_PORT}
 
-isScope: true
+isScope: false
 
 
 
