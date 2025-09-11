@@ -30,13 +30,10 @@
       },
      "type" : "String"
      },
-    "project_role_id": {
+    "project_role": {
 
-     "name" : "project_role_id",
-     "required" : "false",
-     "foreign" : {
-      "resource" : "Project_role" 
-      },
+     "name" : "project_role",
+     "required" : "true",
      "type" : "String"
       }
    
