@@ -81,7 +81,7 @@ public class RoleResourceAccess {
         String[] pathSegments = path.split("/");
 
 // The last segment will be the last element in the array
-        resourceName = pathSegments[pathSegments.length - 1];
+        String resourceName = pathSegments[pathSegments.length - 1];
 
         String action = null;
         String resourceId = null;
@@ -219,7 +219,7 @@ public class RoleResourceAccess {
             if (realmAccess != null) {
                 Map<String, Object> realmAccessMap = (Map<String, Object>) realmAccess;
                 List<String> realmRoles = (List<String>) realmAccessMap.get("roles");
-                roles = realmRoles;
+//                roles = realmRoles;
                 response.put("realmRoles", String.valueOf(realmRoles));
             }
 
