@@ -1,5 +1,6 @@
 package com.rasp.app.controller;
 
+import com.rasp.app.resource.UpdateUserRequest;
 import com.rasp.app.resource.UserResource;
 import com.rasp.app.service.IamService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +67,23 @@ public ResponseEntity<?> getAllRole() {
         return iamService.getUserRoleResource(projectId);
     }
 
+    @GetMapping("/users-with-roles")
+    public ResponseEntity<?> getAllUsersWithRoles() {
+        return iamService.getAllUsersWithRoles();
+    }
 
+    // ✅ Update user details + roles
+    @PutMapping("update-user/{userId}")
+    public ResponseEntity<?> updateUser(
+            @PathVariable String userId,
+            @RequestBody UpdateUserRequest request
+    ) {
+        return iamService.updateUser(
+                userId,
+                request.getUpdatedFields(),
+                request.getAssignRoles(),
+                request.getRemoveRoles()
+        );
+    }
 
 }

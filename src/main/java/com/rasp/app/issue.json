@@ -14,7 +14,7 @@
      },
     "owner_id": {
 
-     "name" : "owner_id",
+     "name" : " ",
      "required" : "true",
      "foreign" : {
       "resource" : "Users" 

@@ -875,4 +875,189 @@ public ResponseEntity<?> getUsersByRole(String roleName) {
 
 
     }
+
+    public ResponseEntity<?> getAllUsersWithRoles() {
+        RestTemplate restTemplate = new RestTemplate();
+
+        // 1. Get admin token
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> tokenRequestBody = new LinkedMultiValueMap<>();
+        tokenRequestBody.add("grant_type", "client_credentials");
+        tokenRequestBody.add("client_id", clientId);
+        tokenRequestBody.add("client_secret", clientSecret);
+
+        HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(tokenRequestBody, headers);
+        ResponseEntity<Map> tokenResponse = restTemplate.exchange(
+                keycloakTokenUrl,
+                HttpMethod.POST,
+                tokenRequest,
+                Map.class
+        );
+
+        if (!tokenResponse.getStatusCode().is2xxSuccessful()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Failed to get admin token");
+        }
+
+        String accessToken = (String) tokenResponse.getBody().get("access_token");
+
+        // 2. Fetch all users
+        HttpHeaders authHeaders = new HttpHeaders();
+        authHeaders.setBearerAuth(accessToken);
+        HttpEntity<Void> entity = new HttpEntity<>(authHeaders);
+
+        ResponseEntity<List> usersResponse = restTemplate.exchange(
+                keycloakUrl + "/users",
+                HttpMethod.GET,
+                entity,
+                List.class
+        );
+
+        if (!usersResponse.getStatusCode().is2xxSuccessful()) {
+            return ResponseEntity.status(usersResponse.getStatusCode()).body("Failed to fetch users");
+        }
+
+        List<Map<String, Object>> users = usersResponse.getBody();
+
+        // 3. Fetch roles for each user (realm + client)
+        for (Map<String, Object> user : users) {
+            String userId = (String) user.get("id");
+
+            ResponseEntity<Map> rolesResponse = restTemplate.exchange(
+                    keycloakUrl + "/users/" + userId + "/role-mappings",
+                    HttpMethod.GET,
+                    entity,
+                    Map.class
+            );
+
+            Map<String, Object> roleMappings = rolesResponse.getBody();
+
+            // Extract realm roles
+            List<Map<String, Object>> realmRoles = roleMappings.get("realmMappings") != null
+                    ? (List<Map<String, Object>>) roleMappings.get("realmMappings")
+                    : List.of();
+
+            // Extract client roles
+            Map<String, Object> clientMappings = roleMappings.get("clientMappings") != null
+                    ? (Map<String, Object>) roleMappings.get("clientMappings")
+                    : Map.of();
+
+            user.put("realmRoles", realmRoles);
+            user.put("clientRoles", clientMappings);
+        }
+
+        return ResponseEntity.ok(users);
+    }
+
+
+    private List<Map<String, Object>> getRoleRepresentations(List<String> roleNames, String accessToken) {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<List> allRolesResponse = restTemplate.exchange(
+                keycloakUrl + "/roles",
+                HttpMethod.GET,
+                entity,
+                List.class
+        );
+
+        List<Map<String, Object>> allRoles = allRolesResponse.getBody();
+        List<Map<String, Object>> matchedRoles = new ArrayList<>();
+
+        for (Map<String, Object> role : allRoles) {
+            String roleName = (String) role.get("name");
+            if (roleNames.contains(roleName)) {
+                matchedRoles.add(role);
+            }
+        }
+
+        return matchedRoles;
+    }
+
+    public ResponseEntity<?> updateUser(String userId, Map<String, Object> updatedFields,
+                                        List<String> rolesToAssign, List<String> rolesToRemove) {
+        RestTemplate restTemplate = new RestTemplate();
+
+
+        // 1. Get admin token (same as in addUser)
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> tokenRequestBody = new LinkedMultiValueMap<>();
+        tokenRequestBody.add("grant_type", "client_credentials");
+        tokenRequestBody.add("client_id", clientId);
+        tokenRequestBody.add("client_secret", clientSecret);
+
+        HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(tokenRequestBody, headers);
+        ResponseEntity<Map> tokenResponse = restTemplate.exchange(
+                keycloakTokenUrl,
+                HttpMethod.POST,
+                tokenRequest,
+                Map.class
+        );
+
+        if (!tokenResponse.getStatusCode().is2xxSuccessful()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Failed to get admin token");
+        }
+
+        String accessToken = (String) tokenResponse.getBody().get("access_token");
+
+
+        headers.setBearerAuth(accessToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // 1️⃣ Update user basic details
+        HttpEntity<Map<String, Object>> updateRequest = new HttpEntity<>(updatedFields, headers);
+        ResponseEntity<Void> updateResponse = restTemplate.exchange(
+                keycloakUrl + "/users/" + userId,
+                HttpMethod.PUT,
+                updateRequest,
+                Void.class
+        );
+
+        if (!updateResponse.getStatusCode().is2xxSuccessful()) {
+            return ResponseEntity.status(updateResponse.getStatusCode())
+                    .body("Failed to update user");
+        }
+
+        // 2️⃣ Handle roles
+        HttpEntity<List<Map<String, Object>>> roleRequest;
+
+        // 2a: Assign roles
+        if (rolesToAssign != null && !rolesToAssign.isEmpty()) {
+            List<Map<String, Object>> roleReps = getRoleRepresentations(rolesToAssign, accessToken);
+            roleRequest = new HttpEntity<>(roleReps, headers);
+
+            restTemplate.exchange(
+                    keycloakUrl + "/users/" + userId + "/role-mappings/realm",
+                    HttpMethod.POST,
+                    roleRequest,
+                    Void.class
+            );
+        }
+
+        // 2b: Unassign roles
+        if (rolesToRemove != null && !rolesToRemove.isEmpty()) {
+            List<Map<String, Object>> roleReps = getRoleRepresentations(rolesToRemove, accessToken);
+            roleRequest = new HttpEntity<>(roleReps, headers);
+
+            restTemplate.exchange(
+                    keycloakUrl + "/users/" + userId + "/role-mappings/realm",
+                    HttpMethod.DELETE,
+                    roleRequest,
+                    Void.class
+            );
+        }
+
+        return ResponseEntity.ok("User updated successfully");
+    }
+
+
+
+
+
 }
