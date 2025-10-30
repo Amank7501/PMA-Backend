@@ -66,6 +66,14 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- JUnit Platform Suite Engine for @Suite support -->
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-suite-engine</artifactId>
+			<version>1.10.1</version>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
@@ -123,6 +131,33 @@
 
 	<build>
 		<plugins>
+			<!-- Maven Surefire Plugin Configuration for Test Execution -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.2.3</version>
+				<configuration>
+					<!-- Only include the TestSuite class for test execution -->
+					<includes>
+						<include>**/TestSuite.java</include>
+					</includes>
+					
+					<!-- Test execution order configuration -->
+					<runOrder>alphabetical</runOrder>  <!-- Ensures consistent test order -->
+					
+					<!-- JVM Forking Configuration -->
+					<forkCount>1</forkCount>           <!-- Number of JVM forks to create -->
+					<reuseForks>false</reuseForks>     <!-- Don't reuse forks for better test isolation -->
+					
+					<!-- Additional configuration options (uncomment if needed) -->
+					<!--
+					<argLine>-Xmx1024m</argLine>       
+					<systemPropertyVariables>
+					    <propertyName>value</propertyName>
+					</systemPropertyVariables>
+					-->
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

@@ -3,6 +3,7 @@ import com.rasp.app.helper.LabelHelper;
 import com.rasp.app.helper.ProjectHelper;
 import com.rasp.app.resource.Label;
 import com.rasp.app.resource.Project;
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.servlet.http.Cookie;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.context.WebApplicationContext;
 import platform.resource.BaseResource;
 import platform.resource.session;
 import platform.util.ApplicationException;
@@ -39,35 +41,52 @@ public class LabelTest {
 
 
     @Autowired
+    private WebApplicationContext webApplicationContext;
+
+    @Autowired
     private MockMvc mockMvc;
 
     @Mock
     private session httpSession;
 
-    private ServletContext context;
+
+    private static ServletContext context;
+    private static String accessToken;
+    private static String refreshToken;
+
+    static {
+        Dotenv dotenv = Dotenv.configure().load();
+        dotenv.entries().forEach(entry ->
+                System.setProperty(entry.getKey(), entry.getValue())
+        );
+    }
+
 
     @BeforeEach
-    void setUp() throws ApplicationException {
+    void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         context = new ServletContext(httpSession);
+
         Registry.register();
+        // Only login if we don't have tokens yet
+        if (accessToken == null || refreshToken == null) {
+            // Perform login
+            String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
+            MvcResult mvcResult = mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(loginRequestBody))
+                    .andExpect(status().isOk())
+                    .andExpect(cookie().exists("access_token"))
+                    .andExpect(cookie().exists("refresh_token"))
+                    .andReturn();
+
+            accessToken = mvcResult.getResponse().getCookie("access_token").getValue();
+            refreshToken = mvcResult.getResponse().getCookie("refresh_token").getValue();
+        }
     }
 
     @Test
     void createLabel() throws Exception {
-        String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
-
-        MvcResult mvcResult= mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestBody)
-                ).andExpect(status().isOk())
-                .andExpect(cookie().exists("access_token"))
-                .andExpect(cookie().exists("refresh_token"))
-                .andDo(print())
-                .andReturn();
-
-        String accessToken = mvcResult.getResponse().getCookie("access_token").getValue();
-        String refreshToken = mvcResult.getResponse().getCookie("refresh_token").getValue();
 
       BaseResource[] baseResources=  ProjectHelper.getInstance().getAll();
         Project project=null;
@@ -95,20 +114,6 @@ public class LabelTest {
 
     @Test
     void fetchLabel() throws Exception {
-        String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
-
-        MvcResult mvcResult= mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestBody)
-                ).andExpect(status().isOk())
-                .andExpect(cookie().exists("access_token"))
-                .andExpect(cookie().exists("refresh_token"))
-                .andDo(print())
-                .andReturn();
-
-        String accessToken = mvcResult.getResponse().getCookie("access_token").getValue();
-        String refreshToken = mvcResult.getResponse().getCookie("refresh_token").getValue();
-        ;
 
 
         mockMvc.perform(get("/api/label?queryId=GET_ALL")
@@ -123,19 +128,7 @@ public class LabelTest {
 
     @Test
     void updateLabel() throws Exception {
-        String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
 
-        MvcResult mvcResult= mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestBody)
-                ).andExpect(status().isOk())
-                .andExpect(cookie().exists("access_token"))
-                .andExpect(cookie().exists("refresh_token"))
-                .andDo(print())
-                .andReturn();
-
-        String accessToken = mvcResult.getResponse().getCookie("access_token").getValue();
-        String refreshToken = mvcResult.getResponse().getCookie("refresh_token").getValue();
 
         BaseResource[] baseResources= LabelHelper.getInstance().getAll();
         Label label=null;
@@ -166,19 +159,7 @@ public class LabelTest {
 
     @Test
     void deleteProject() throws Exception {
-        String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
 
-        MvcResult mvcResult= mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestBody)
-                ).andExpect(status().isOk())
-                .andExpect(cookie().exists("access_token"))
-                .andExpect(cookie().exists("refresh_token"))
-                .andDo(print())
-                .andReturn();
-
-        String accessToken = mvcResult.getResponse().getCookie("access_token").getValue();
-        String refreshToken = mvcResult.getResponse().getCookie("refresh_token").getValue();
 
         BaseResource[] baseResources= LabelHelper.getInstance().getAll();
         Label label=null;

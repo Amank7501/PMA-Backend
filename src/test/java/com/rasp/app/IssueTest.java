@@ -24,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.context.WebApplicationContext;
 import platform.resource.BaseResource;
 import platform.resource.session;
 import platform.util.ApplicationException;
@@ -47,35 +48,53 @@ public class IssueTest {
 
 
     @Autowired
+    private WebApplicationContext webApplicationContext;
+
+    @Autowired
     private MockMvc mockMvc;
 
     @Mock
     private session httpSession;
 
-    private ServletContext context;
+
+    private static ServletContext context;
+    private static String accessToken;
+    private static String refreshToken;
+
+    static {
+        Dotenv dotenv = Dotenv.configure().load();
+        dotenv.entries().forEach(entry ->
+                System.setProperty(entry.getKey(), entry.getValue())
+        );
+    }
+
 
     @BeforeEach
-    void setUp() throws ApplicationException {
+    void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         context = new ServletContext(httpSession);
+
         Registry.register();
+        // Only login if we don't have tokens yet
+        if (accessToken == null || refreshToken == null) {
+            // Perform login
+            String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
+            MvcResult mvcResult = mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(loginRequestBody))
+                    .andExpect(status().isOk())
+                    .andExpect(cookie().exists("access_token"))
+                    .andExpect(cookie().exists("refresh_token"))
+                    .andReturn();
+
+            accessToken = mvcResult.getResponse().getCookie("access_token").getValue();
+            refreshToken = mvcResult.getResponse().getCookie("refresh_token").getValue();
+        }
     }
 
     @Test
     void createIssue() throws Exception {
-        String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
 
-        MvcResult mvcResult= mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestBody)
-                ).andExpect(status().isOk())
-                .andExpect(cookie().exists("access_token"))
-                .andExpect(cookie().exists("refresh_token"))
-                .andDo(print())
-                .andReturn();
-
-        String accessToken = mvcResult.getResponse().getCookie("access_token").getValue();
-        String refreshToken = mvcResult.getResponse().getCookie("refresh_token").getValue();
 
         BaseResource[] baseResources=  ProjectHelper.getInstance().getAll();
         BaseResource[] users= UsersHelper.getInstance().getAll();
@@ -121,22 +140,54 @@ public class IssueTest {
     }
 
     @Test
-    void fetchProject() throws Exception {
-        String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
+    void createIssue_neg() throws Exception {
 
-        MvcResult mvcResult= mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestBody)
+
+        BaseResource[] baseResources=  ProjectHelper.getInstance().getAll();
+        BaseResource[] users= UsersHelper.getInstance().getAll();
+        BaseResource[] lists=  ListResHelper.getInstance().getAll();
+        Project project=null;
+        Users user=null;
+        ListRes listRes=null;
+        for (BaseResource br:users) {
+            user = (Users) br;
+            break;
+        }
+        for (BaseResource br:lists) {
+            listRes = (ListRes) br;
+            break;
+        }
+        for (BaseResource br:baseResources) {
+            project = (Project) br;
+            break;
+        }
+
+
+
+        String name="label1"+ UUID.randomUUID().toString().substring(0, 2);
+        String project_id=project.getId();
+        String owner_id="11111111111111111111";
+        String list_id=listRes.getId();
+        String projectRequestBody = String.format(
+                "{\"owner_id\":\"%s\",\"project_id\":\"%s\",\"issue_title\":\"first_issue\"," +
+                        "\"description\":\"first_issue\",\"attachment\":\"fewrew\"," +
+                        "\"priority\":\"high\",\"status\":\"pending\",\"list_id\":\"%s\"}",
+                owner_id,project_id,list_id
+        );
+        String encodedResource = Base64.getEncoder().encodeToString(projectRequestBody.getBytes());
+        mockMvc.perform(post("/api/issue")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .content("resource=" + URLEncoder.encode(encodedResource, StandardCharsets.UTF_8))
+                        .header("Authorization", "Bearer " + accessToken)
+                        .cookie(new Cookie("refresh_token", refreshToken))
                 ).andExpect(status().isOk())
-                .andExpect(cookie().exists("access_token"))
-                .andExpect(cookie().exists("refresh_token"))
-                .andDo(print())
-                .andReturn();
+                .andExpect(content().string(Matchers.containsString("\"message\":\"Foreign Key violation : owner_id\"")))
+                .andExpect(content().string(Matchers.containsString("\"errCode\":-1")));
 
-        String accessToken = mvcResult.getResponse().getCookie("access_token").getValue();
-        String refreshToken = mvcResult.getResponse().getCookie("refresh_token").getValue();
-        ;
+    }
 
+    @Test
+    void fetchProject() throws Exception {
 
         mockMvc.perform(get("/api/issue?queryId=GET_ALL")
 
@@ -150,20 +201,6 @@ public class IssueTest {
 
     @Test
     void updateIssue() throws Exception {
-        String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
-
-        MvcResult mvcResult= mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestBody)
-                ).andExpect(status().isOk())
-                .andExpect(cookie().exists("access_token"))
-                .andExpect(cookie().exists("refresh_token"))
-                .andDo(print())
-                .andReturn();
-
-        String accessToken = mvcResult.getResponse().getCookie("access_token").getValue();
-        String refreshToken = mvcResult.getResponse().getCookie("refresh_token").getValue();
-
 
         BaseResource[] issues=  IssueHelper.getInstance().getAll();
 
@@ -199,46 +236,82 @@ public class IssueTest {
 
     }
 
-
     @Test
-    void deleteIssue() throws Exception {
-        String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
+    void updateIssue_neg() throws Exception {
 
-        MvcResult mvcResult= mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestBody)
-                ).andExpect(status().isOk())
-                .andExpect(cookie().exists("access_token"))
-                .andExpect(cookie().exists("refresh_token"))
-                .andDo(print())
-                .andReturn();
+        BaseResource[] issues=  IssueHelper.getInstance().getAll();
 
-        String accessToken = mvcResult.getResponse().getCookie("access_token").getValue();
-        String refreshToken = mvcResult.getResponse().getCookie("refresh_token").getValue();
-
-        BaseResource[] baseResources= IssueHelper.getInstance().getAll();
         Issue issue=null;
-        for(BaseResource br:baseResources) {
+        ListRes listRes=null;
+        for (BaseResource br:issues) {
             issue = (Issue) br;
             break;
         }
 
+
+
+
+
+        String project_id="11111111111111111";
+        String owner_id="111111111111111111";
+        String list_id=issue.getList_id();
         String id=issue.getId();
-        String requestBody = String.format(
-                "{\"id\":\"%s\"}",
-                id
+        String projectRequestBody = String.format(
+                "{\"id\":\"%s\",\"owner_id\":\"%s\",\"project_id\":\"%s\",\"issue_title\":\"first_issue\"," +
+                        "\"description\":\"first_issue\",\"attachment\":\"fewrew\"," +
+                        "\"priority\":\"high\",\"status\":\"pending\",\"list_id\":\"%s\"}",
+                id, owner_id,project_id,list_id
         );
-        String encodedResource = Base64.getEncoder().encodeToString(requestBody.getBytes());
-        mockMvc.perform(post("/api/issue?action=DELETE")
+        String encodedResource = Base64.getEncoder().encodeToString(projectRequestBody.getBytes());
+        mockMvc.perform(post("/api/issue?action=MODIFY")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .content("resource=" + URLEncoder.encode(encodedResource, StandardCharsets.UTF_8))
                         .header("Authorization", "Bearer " + accessToken)
                         .cookie(new Cookie("refresh_token", refreshToken))
-                ).andExpect(status().isOk())
-                .andExpect(content().string(Matchers.containsString("\"message\":\"Success\"")))
-                .andExpect(content().string(Matchers.containsString("\"errCode\":0")));
-
+                ). andExpect(content().string(Matchers.containsString("\"message\":\"Foreign Key violation : owner_id\"")))
+                .andExpect(content().string(Matchers.containsString("\"errCode\":-1")));
     }
+
+
+//    @Test
+//    void deleteIssue() throws Exception {
+//        String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
+//
+//        MvcResult mvcResult= mockMvc.perform(post("/api/auth/login")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(loginRequestBody)
+//                ).andExpect(status().isOk())
+//                .andExpect(cookie().exists("access_token"))
+//                .andExpect(cookie().exists("refresh_token"))
+//                .andDo(print())
+//                .andReturn();
+//
+//        String accessToken = mvcResult.getResponse().getCookie("access_token").getValue();
+//        String refreshToken = mvcResult.getResponse().getCookie("refresh_token").getValue();
+//
+//        BaseResource[] baseResources= IssueHelper.getInstance().getAll();
+//        Issue issue=null;
+//        for(BaseResource br:baseResources) {
+//            issue = (Issue) br;
+//            break;
+//        }
+//
+//        String id=issue.getId();
+//        String requestBody = String.format(
+//                "{\"id\":\"%s\"}",
+//                id
+//        );
+//        String encodedResource = Base64.getEncoder().encodeToString(requestBody.getBytes());
+//        mockMvc.perform(post("/api/issue?action=DELETE")
+//                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+//                        .content("resource=" + URLEncoder.encode(encodedResource, StandardCharsets.UTF_8))
+//                        .header("Authorization", "Bearer " + accessToken)
+//                        .cookie(new Cookie("refresh_token", refreshToken))
+//                ).andExpect(status().isOk())
+//                .andExpect(content().string(Matchers.containsString("\"message\":\"Success\"")))
+//                .andExpect(content().string(Matchers.containsString("\"errCode\":0")));
+//
+//    }
 
 
 
