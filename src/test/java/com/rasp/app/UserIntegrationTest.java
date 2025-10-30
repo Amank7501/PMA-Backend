@@ -1,5 +1,6 @@
 package com.rasp.app;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -10,7 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import platform.resource.session;
 import platform.util.ApplicationException;
@@ -25,7 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-
 @Import(TestConfig.class)
 class UserIntegrationTest {
     
@@ -37,12 +36,17 @@ class UserIntegrationTest {
 
     private ServletContext context;
 
+    static {
+        Dotenv dotenv = Dotenv.configure().load();
+        dotenv.entries().forEach(entry ->
+                System.setProperty(entry.getKey(), entry.getValue())
+        );
+    }
+
     @BeforeEach
     void setUp() throws ApplicationException {
         MockitoAnnotations.openMocks(this);
         context = new ServletContext(httpSession);
-
-
     }
 
     /**

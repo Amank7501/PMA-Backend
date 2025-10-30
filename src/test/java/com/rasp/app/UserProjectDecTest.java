@@ -4,6 +4,7 @@ package com.rasp.app;
 import com.rasp.app.decorator.IssueUserDecorator;
 import com.rasp.app.decorator.LabelIssueDecorator;
 import com.rasp.app.decorator.UserProjectDecorator;
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.context.WebApplicationContext;
 import platform.decorator.DecoratorManager;
 import platform.resource.session;
 import platform.util.ApplicationException;
@@ -33,36 +35,54 @@ public class UserProjectDecTest {
 
 
     @Autowired
+    private WebApplicationContext webApplicationContext;
+
+    @Autowired
     private MockMvc mockMvc;
 
     @Mock
     private session httpSession;
 
-    private ServletContext context;
+
+    private static ServletContext context;
+    private static String accessToken;
+    private static String refreshToken;
+
+    static {
+        Dotenv dotenv = Dotenv.configure().load();
+        dotenv.entries().forEach(entry ->
+                System.setProperty(entry.getKey(), entry.getValue())
+        );
+    }
+
+
 
     @BeforeEach
-    void setUp() throws ApplicationException {
+    void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         context = new ServletContext(httpSession);
-        DecoratorManager.getInstance().register(new UserProjectDecorator());
+        DecoratorManager.getInstance().register(new IssueUserDecorator());
+        Registry.register();
+        // Only login if we don't have tokens yet
+        if (accessToken == null || refreshToken == null) {
+            // Perform login
+            String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
+            MvcResult mvcResult = mockMvc.perform(post("/api/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(loginRequestBody))
+                    .andExpect(status().isOk())
+                    .andExpect(cookie().exists("access_token"))
+                    .andExpect(cookie().exists("refresh_token"))
+                    .andReturn();
+
+            accessToken = mvcResult.getResponse().getCookie("access_token").getValue();
+            refreshToken = mvcResult.getResponse().getCookie("refresh_token").getValue();
+        }
     }
 
     @Test
     void test_GET_PROJECT_BY_USER_ID() throws Exception {
-        // First, perform login to get tokens
-        String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
 
-        MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestBody))
-                .andExpect(status().isOk())
-                .andExpect(cookie().exists("access_token"))
-                .andExpect(cookie().exists("refresh_token"))
-                .andReturn();
-
-        // Get tokens from response cookies
-        String accessToken = loginResult.getResponse().getCookie("access_token").getValue();
-        String refreshToken = loginResult.getResponse().getCookie("refresh_token").getValue();
 
 
         // Perform the GET request with query parameters
@@ -80,20 +100,7 @@ public class UserProjectDecTest {
 
     @Test
     void test_GET_USER_BY_PROJECT_ID() throws Exception {
-        // First, perform login to get tokens
-        String loginRequestBody = "{\"username\":\"aman\",\"password\":\"aman\"}";
 
-        MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestBody))
-                .andExpect(status().isOk())
-                .andExpect(cookie().exists("access_token"))
-                .andExpect(cookie().exists("refresh_token"))
-                .andReturn();
-
-        // Get tokens from response cookies
-        String accessToken = loginResult.getResponse().getCookie("access_token").getValue();
-        String refreshToken = loginResult.getResponse().getCookie("refresh_token").getValue();
 
 
         // Perform the GET request with query parameters

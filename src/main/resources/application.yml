@@ -29,6 +29,7 @@ spring:
             frontendURL: ${FRONTEND_URL}
             clientId: ${CLIENT_ID}
             clientSecret: ${CLIENT_SECRET}
+            logout-uri: ${KEYCLOAK_HOST}:${KEYCLOAK_PORT}/realms/${REALM}/protocol/openid-connect/logout
 
       resourceserver:
         jwt:

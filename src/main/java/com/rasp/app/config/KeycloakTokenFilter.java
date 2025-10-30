@@ -22,178 +22,177 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+
 @Component
 public class KeycloakTokenFilter extends OncePerRequestFilter {
 
-
     @Value("${spring.security.oauth2.client.provider.keycloak.token-uri}")
-    String REFRESH_URL ;
+    private String REFRESH_URL;
+
     @Value("${spring.security.oauth2.client.provider.keycloak.INTROSPECT_URL}")
-    String INTROSPECT_URL ;
+    private String INTROSPECT_URL;
 
     @Value("${spring.security.oauth2.client.provider.keycloak.clientId}")
-    String CLIENT_ID ;
+    private String CLIENT_ID;
 
     @Value("${spring.security.oauth2.client.provider.keycloak.clientSecret}")
-    String CLIENT_SECRET ;
-
-//    public KeycloakTokenFilter(String REFRESH_URL, String CLIENT_ID, String CLIENT_SECRET) {
-//        this.REFRESH_URL = REFRESH_URL;
-//        this.CLIENT_ID = CLIENT_ID;
-//        this.CLIENT_SECRET = CLIENT_SECRET;
-//    }
+    private String CLIENT_SECRET;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain)
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
 
-        // List of public endpoints
-        if (path.equals("/api/auth/login") ||
-        path.equals("/api/v1/role_resource")||
-                path.equals("/api/auth/register") ||
-                path.equals("/api/auth/callback") ||
-                path.equals("/api/auth/logout") ||
-                path.equals("/api/auth/add-client-role")||
-                path.equals("/api/auth/assign-client-role")||
-                path.equals("/api/auth/user_resource_role")||
-                path.equals("/api/role_resource_permission")||
-                path.equals("/api/auth/add_user")||
-                path.equals("/api/generateApp")||
-                path.equals("/api/resource_role")||
-                path.equals("/api/auth/user_role_mapping")||
-                path.equals("/api/getAllResourceMetaData")||
-                path.equals("/api/GetAllResource")||
-                path.startsWith("/api/getAllResourceMetaData/")||
-                path.startsWith("/api/auth/role")||
-                path.startsWith("/api/role_user_res_instance")||
-                path.startsWith("/api/auth/") && path.endsWith("/users")||
-                path.startsWith("/api/auth/users-with-roles")||
-                path.startsWith("/api/auth/update-user")||
-               // path.equals("/api/batch")||
-                path.equals("/api/auth/addUser")) {
-
-            // Allow the request to proceed without auth token
+        // ✅ Public endpoints (no token check)
+        if (isPublicEndpoint(path)) {
             chain.doFilter(request, response);
             return;
         }
 
-        String accessToken = extractToken(request);
+        // ✅ Extract access token
+        String accessToken = extractAccessToken(request);
         if (accessToken == null) {
-
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing access token");
             return;
         }
 
-        System.out.println("Printing the access token in the request");
+        boolean accessValid = isTokenValid(accessToken);
 
-        System.out.println(accessToken);
-
-        // Validate token
-        if (isTokenValid(accessToken)) {
-            System.out.println("done with validating access token");
+        // ✅ If access token is invalid → try refresh
+        if (!accessValid) {
             String refreshToken = extractRefreshToken(request);
-            if(!isTokenValid(refreshToken)) {
-                System.out.println("refresh token also not valid now");
-                response.sendError(HttpServletResponse.SC_FORBIDDEN,"Refresh token not valid, login karlo");
+
+            if (refreshToken == null || !isTokenValid(refreshToken)) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired tokens");
                 return;
             }
-//            if (refreshToken != null) {
-//                accessToken = refreshAccessToken(refreshToken);
-//                if (accessToken != null) {
-//                    final String newAccessToken = accessToken;
-//
-//                    // Store the new access token in a cookie
-//                    Cookie accessTokenCookie = new Cookie("access_token", newAccessToken);
-//                    accessTokenCookie.setHttpOnly(false);
-//                    accessTokenCookie.setSecure(false);
-//                    accessTokenCookie.setPath("/");
-//                    accessTokenCookie.setMaxAge(60*2); // Set expiry (30 minutes)
-//                    accessTokenCookie.setDomain("localhost");
-//                    response.addCookie(accessTokenCookie);
-//
-//                    // Wrap the request with the new Authorization header
-//                    HttpServletRequest modifiedRequest = new HttpServletRequestWrapper(request) {
-//                        @Override
-//                        public String getHeader(String name) {
-//                            if ("Authorization".equalsIgnoreCase(name)) {
-//                                return "Bearer " + newAccessToken; // Set new token
-//                            }
-//                            return super.getHeader(name);
-//                        }
-//                    };
-//
-//                    // Proceed with the modified request
-//                    chain.doFilter(modifiedRequest, response);
-//                    return;
-//                } else {
-//                    System.out.print("access token retrieval issue");
-//                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
-//                    return;
-//                }
-//            } else {
-//                System.out.println("refresh token retrieval issue");
-//                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-//                return;
-//            }
+
+            String[] tokens = refreshAccessToken(refreshToken);
+            if (tokens == null || tokens[0] == null) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Failed to refresh access token");
+                return;
+            }
+            
+            String newAccessToken = tokens[0];
+            String newRefreshToken = tokens[1];
+
+            setCookie(response, "access_token", newAccessToken, -1);
+            setCookie(response, "refresh_token", newRefreshToken, -1);
+
+            // ✅ Wrap request with updated Authorization header
+            HttpServletRequest modifiedRequest = new HttpServletRequestWrapper(request) {
+                @Override
+                public String getHeader(String name) {
+                    if ("Authorization".equalsIgnoreCase(name)) {
+                        return "Bearer " + newAccessToken;
+                    }
+                    return super.getHeader(name);
+                }
+            };
+
+            setAuthentication(modifiedRequest);
+            chain.doFilter(modifiedRequest, response);
+            return;
         }
 
-        // Authenticate user in Spring Security
-        UserDetails userDetails = new User("user", "", Collections.emptyList());
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
-        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // ✅ Access token valid — proceed
+        setAuthentication(request);
         chain.doFilter(request, response);
     }
 
-    public boolean isTokenValid(String token) {
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            ObjectMapper objectMapper = new ObjectMapper();
+    // --------------------------
+    // 🔹 TOKEN VALIDATION LOGIC
+    // --------------------------
+    private boolean isTokenValid(String token) {
+        if (token == null || token.isEmpty()) {
+            System.out.println("Token is null or empty");
+            return false;
+        }
 
-            // Prepare the request headers
+        try {
+            // First, try to parse the token locally to check expiration
+            String[] parts = token.split("\\.");
+            if (parts.length < 2) {
+                System.out.println("Invalid token format");
+                return false;
+            }
+
+            // Decode the payload (middle part of JWT)
+            String payloadJson = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
+            JsonNode payload = objectMapper.readTree(payloadJson);
+
+            // Check expiration
+            if (payload.has("exp")) {
+                long expiresAt = payload.get("exp").asLong() * 1000;
+                long now = System.currentTimeMillis();
+                long timeLeft = expiresAt - now;
+
+                System.out.println("Token expires in: " + (timeLeft / 1000) + " seconds");
+
+                // If token is already expired
+                if (timeLeft <= 0) {
+                    System.out.println("Token has expired");
+                    return false;
+                }
+
+                // If token is about to expire soon (less than 30 seconds)
+                if (timeLeft < 30000) {
+                    System.out.println("Token will expire soon, forcing refresh");
+                    return false;
+                }
+            }
+
+            // If we got here, the token is not expired and not about to expire
+            // Now verify the token with Keycloak
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            headers.setBasicAuth(CLIENT_ID, CLIENT_SECRET); // Adds Authorization: Basic <base64(client_id:client_secret)>
+            headers.setBasicAuth(CLIENT_ID, CLIENT_SECRET);
 
-            // Prepare the request body
             String body = "token=" + token;
+            HttpEntity<String> entity = new HttpEntity<>(body, headers);
 
-            HttpEntity<String> requestEntity = new HttpEntity<>(body, headers);
+            System.out.println("Validating token with Keycloak...");
+            ResponseEntity<String> response = restTemplate.exchange(
+                INTROSPECT_URL,
+                HttpMethod.POST,
+                entity,
+                String.class
+            );
 
-            // Send the request
-            ResponseEntity<String> response = restTemplate.exchange(INTROSPECT_URL, HttpMethod.POST, requestEntity, String.class);
+            if (response.getStatusCode() != HttpStatus.OK) {
+                System.out.println("Keycloak validation failed with status: " + response.getStatusCode());
+                return false;
+            }
 
-            // Parse response
             JsonNode json = objectMapper.readTree(response.getBody());
-            System.out.println(json);
+            boolean active = json.has("active") && json.get("active").asBoolean();
+            System.out.println("Keycloak token validation result: " + (active ? "active" : "inactive"));
 
-            return json.get("active").asBoolean();
+            return active;
+
         } catch (Exception e) {
-            System.out.println("wrong");
-            System.out.println(e.getMessage());
+            System.out.println("Token validation error: " + e.getMessage());
             return false;
         }
     }
 
-    private String refreshAccessToken(String refreshToken) {
+    // --------------------------
+    // 🔹 REFRESH ACCESS TOKEN
+    // --------------------------
+    private String[] refreshAccessToken(String refreshToken) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
-            ObjectMapper objectMapper = new ObjectMapper();
+            System.out.println("Attempting to refresh token...");
 
-            // Set headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-            // Request body as URL-encoded string
             String body = "grant_type=refresh_token" +
                     "&refresh_token=" + refreshToken +
                     "&client_id=" + CLIENT_ID +
@@ -201,40 +200,122 @@ public class KeycloakTokenFilter extends OncePerRequestFilter {
 
             HttpEntity<String> requestEntity = new HttpEntity<>(body, headers);
 
-            // Send the request
+            System.out.println("Sending token refresh request to: " + REFRESH_URL);
             ResponseEntity<String> response = restTemplate.exchange(
-                    REFRESH_URL, HttpMethod.POST, requestEntity, String.class
+                REFRESH_URL,
+                HttpMethod.POST,
+                requestEntity,
+                String.class
             );
 
-            // Parse response
-            JsonNode json = objectMapper.readTree(response.getBody());
-            System.out.println(json);
-//            System.out.println(json.has("access_token") ? json.get("access_token").asText() : null);
+            if (response.getStatusCode() != HttpStatus.OK) {
+                System.out.println("Token refresh failed with status: " + response.getStatusCode());
+                System.out.println("Response: " + response.getBody());
+                return null;
+            }
 
-            // Extract and return the new access token
-            return json.has("access_token") ? json.get("access_token").asText() : null;
+            JsonNode json = objectMapper.readTree(response.getBody());
+            if (!json.has("access_token")) {
+                System.out.println("No access_token in refresh response");
+                return null;
+            }
+
+            // Get the new tokens
+            String newAccessToken = json.get("access_token").asText();
+            String newRefreshToken = json.has("refresh_token") ?
+                json.get("refresh_token").asText() : refreshToken; // Use new refresh token if provided, else keep the old one
+
+            System.out.println("Successfully refreshed tokens");
+            System.out.println("New access token: " + newAccessToken.substring(0, 20) + "...");
+            if (newRefreshToken != null && !newRefreshToken.equals(refreshToken)) {
+                System.out.println("Received new refresh token");
+            }
+
+            return new String[]{newAccessToken, newRefreshToken};
+
         } catch (Exception e) {
             System.out.println("Error refreshing token: " + e.getMessage());
             return null;
         }
     }
 
-    private String extractToken(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        return (StringUtils.hasText(header) && header.startsWith("Bearer ")) ? header.substring(7) : null;
+    // --------------------------
+    // 🔹 AUTHENTICATION CONTEXT
+    // --------------------------
+    private void setAuthentication(HttpServletRequest request) {
+        UserDetails userDetails = new User("user", "", Collections.emptyList());
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    private String extractRefreshToken(HttpServletRequest request) {
+    // --------------------------
+    // 🔹 TOKEN EXTRACTION HELPERS
+    // --------------------------
+    private String extractAccessToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+
+        // fallback — if access_token is in cookie
         if (request.getCookies() != null) {
-            System.out.println("Cookies found!!");
             for (Cookie cookie : request.getCookies()) {
-                if ("refresh_token".equals(cookie.getName())) {
-//                    System.out.println(cookie.getValue());
+                if ("access_token".equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }
         }
-        System.out.println("No Cookies found");
         return null;
+    }
+
+    private String extractRefreshToken(HttpServletRequest request) {
+        if (request.getCookies() == null) return null;
+        for (Cookie cookie : request.getCookies()) {
+            if ("refresh_token".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
+
+    private void setCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setHttpOnly(true); // prevents JavaScript access
+        cookie.setSecure(false);  // set true in HTTPS
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge);
+        response.addCookie(cookie);
+    }
+
+    // --------------------------
+    // 🔹 PUBLIC ENDPOINTS
+    // --------------------------
+    private boolean isPublicEndpoint(String path) {
+        return (
+                path.equals("/api/auth/login") ||
+                        path.equals("/api/auth/register") ||
+                        path.equals("/api/auth/callback") ||
+                        path.equals("/api/auth/logout") ||
+                        path.equals("/api/auth/add-client-role") ||
+                        path.equals("/api/auth/assign-client-role") ||
+                        path.equals("/api/auth/user_resource_role") ||
+                        path.equals("/api/v1/role_resource") ||
+                        path.equals("/api/role_resource_permission") ||
+                        path.equals("/api/auth/add_user") ||
+                        path.equals("/api/generateApp") ||
+                        path.equals("/api/resource_role") ||
+                        path.equals("/api/auth/user_role_mapping") ||
+                        path.equals("/api/getAllResourceMetaData") ||
+                        path.equals("/api/GetAllResource") ||
+                        path.startsWith("/api/getAllResourceMetaData/") ||
+                        path.startsWith("/api/auth/role") ||
+                        path.startsWith("/api/role_user_res_instance") ||
+                        (path.startsWith("/api/auth/") && path.endsWith("/users")) ||
+                        path.startsWith("/api/auth/users-with-roles") ||
+                        path.startsWith("/api/auth/update-user") ||
+                        path.equals("/api/auth/addUser")
+        );
     }
 }
