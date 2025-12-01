@@ -9,6 +9,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import platform.db.Expression;
@@ -204,18 +205,40 @@ String resource=userResource.getResourceName();
 
     HttpEntity<Map<String, Object>> userRequest = new HttpEntity<>(userPayload, userHeaders);
 
-    ResponseEntity<String> userResponse = restTemplate.exchange(
-            keycloakUrl+"/users",
-            HttpMethod.POST,
-            userRequest,
-            String.class
-    );
+    try {
+        ResponseEntity<String> userResponse = restTemplate.exchange(
+                keycloakUrl+"/users",
+                HttpMethod.POST,
+                userRequest,
+                String.class
+        );
 
 
-
-    if (!userResponse.getStatusCode().is2xxSuccessful()) {
-        return ResponseEntity.status(userResponse.getStatusCode()).body("Failed to create user");
+        if (!userResponse.getStatusCode().is2xxSuccessful()) {
+            return ResponseEntity.status(userResponse.getStatusCode()).body("Failed to create user");
+        }
     }
+    catch (HttpClientErrorException.Conflict ex) {
+        // 409 Conflict → usually "user already exists"
+        baseHelper.deleteById(baseResource);
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body("User already exists");
+
+
+    }
+    catch (Exception ex) {
+        // Any unknown error
+        System.out.println("Unexpected error: " +"same name");
+        baseHelper.deleteById(baseResource);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Unexpected error: " + ex.getMessage());
+    }
+
+
+
+
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
@@ -1046,6 +1069,7 @@ public ResponseEntity<?> getUsersByRole(String roleName) {
             roleRequest = new HttpEntity<>(roleReps, headers);
 
             restTemplate.exchange(
+                    //${KEYCLOAK_HOST}:${KEYCLOAK_PORT}/admin/realms/${REALM}
                     keycloakUrl + "/users/" + userId + "/role-mappings/realm",
                     HttpMethod.DELETE,
                     roleRequest,
